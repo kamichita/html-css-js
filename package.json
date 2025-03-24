@@ -1,0 +1,35 @@
+{
+  "name": "html-css-js",
+  "version": "1.0.0",
+  "description": "Simple HTML, CSS, JS project with Node.js server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kamichita/html-css-js.git"
+  },
+  "keywords": [
+    "html",
+    "css",
+    "javascript",
+    "node"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kamichita/html-css-js/issues"
+  },
+  "homepage": "https://github.com/kamichita/html-css-js#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
