@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>チャット＆お問い合わせ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #36393f;
+            --sidebar-color: #2f3136;
+            --text-color: #dcddde;
+            --header-color: #202225;
+            --input-bg: #40444b;
+            --accent-color: #5865f2;
+            --hover-color: #4752c4;
+            --divider-color: #26282c;
+            --success-color: #43b581;
+            --danger-color: #f04747;
+            --warning-color: #faa61a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 240px;
+            background-color: var(--sidebar-color);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--divider-color);
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            font-size: 16px;
+            font-weight: bold;
+            border-bottom: 1px solid var(--divider-color);
+            background-color: var(--header-color);
+        }
+
+        .sidebar-menu {
+            padding: 12px;
+        }
+
+        .menu-item {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-item.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 16px;
+            font-weight: bold;
+            background-color: var(--header-color);
+            border-bottom: 1px solid var(--divider-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .header .fa-hashtag {
+            margin-right: 8px;
+            color: var(--text-color);
+            opacity: 0.6;
+        }
+
+        /* チャット部分 */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 16px;
+            padding: 8px;
+            border-radius: 4px;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            margin-right: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .username {
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: var(--text-color);
+            opacity: 0.6;
+        }
+
+        .message-text {
+            word-break: break-word;
+        }
+
+        .chat-input-container {
+            padding: 16px;
+            border-top: 1px solid var(--divider-color);
+            display: flex;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            outline: none;
+            resize: none;
+            min-height: 44px;
+            max-height: 200px;
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-color);
+            opacity: 0.6;
+        }
+
+        .send-button {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            border: none;
+            color: white;
+            margin-left: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .send-button:hover {
+            background-color: var(--hover-color);
+        }
+
+        .send-button:disabled {
+            background-color: var(--input-bg);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        /* お問い合わせフォーム */
+        .contact-form {
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .contact-form.active {
+            display: flex;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border-radius: 4px;
+            border: none;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            outline: none;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 4px;
+            border: none;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            outline: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23dcddde' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 4px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--hover-color);
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .alert.success {
+            background-color: var(--success-color);
+            color: white;
+            display: block;
+        }
+
+        .alert.error {
+            background-color: var(--danger-color);
+            color: white;
+            display: block;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 60px;
+            }
+
+            .sidebar-header, .menu-text {
+                display: none;
+            }
+
+            .menu-item {
+                display: flex;
+                justify-content: center;
+                font-size: 18px;
+            }
+        }
+
+        /* ユーザー一覧 */
+        .user-list {
+            width: 240px;
+            background-color: var(--sidebar-color);
+            padding: 16px;
+            border-left: 1px solid var(--divider-color);
+        }
+
+        .user-list-header {
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            opacity: 0.6;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .user-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .user-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--success-color);
+            margin-left: auto;
+        }
+
+        /* ダークモード/ライトモード切り替え */
+        .theme-switch {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            z-index: 100;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--sidebar-color);
+            border: 1px solid var(--divider-color);
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .theme-switch:hover {
+            transform: scale(1.1);
+        }
+
+        body.light-mode {
+            --bg-color: #ffffff;
+            --sidebar-color: #f2f3f5;
+            --text-color: #2e3338;
+            --header-color: #e3e5e8;
+            --input-bg: #ebedef;
+            --divider-color: #e3e5e8;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">チャット＆お問い合わせ</div>
+        <div class="sidebar-menu">
+            <div class="menu-item active" id="menu-chat">
+                <i class="fas fa-comments"></i>
+                <span class="menu-text"> チャット</span>
+            </div>
+            <div class="menu-item" id="menu-contact">
+                <i class="fas fa-envelope"></i>
+                <span class="menu-text"> お問い合わせ</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <i class="fas fa-hashtag"></i>
+            <div id="current-section">一般</div>
+        </div>
+
+        <!-- チャット部分 -->
+        <div id="chat-section">
+            <div class="chat-container" id="chat-messages">
+                <!-- メッセージはJSで動的に追加されます -->
+            </div>
+            <div class="chat-input-container">
+                <textarea class="chat-input" id="chat-input" placeholder="メッセージを入力してください..." rows="1"></textarea>
+                <button class="send-button" id="send-button" disabled>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- お問い合わせフォーム -->
+        <div id="contact-form" class="contact-form">
+            <div id="contact-alert" class="alert"></div>
+            <div class="form-group">
+                <label for="name" class="form-label">名前</label>
+                <input type="text" id="name" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="email" class="form-label">メールアドレス</label>
+                <input type="email" id="email" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="subject" class="form-label">件名</label>
+                <select id="subject" class="form-select" required>
+                    <option value="">選択してください</option>
+                    <option value="質問">質問</option>
+                    <option value="提案">提案</option>
+                    <option value="通報">通報・荒らし</option>
+                    <option value="その他">その他</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="message" class="form-label">内容</label>
+                <textarea id="message" class="form-control" required></textarea>
+            </div>
+            <button type="submit" id="submit-contact" class="btn btn-primary">送信</button>
+        </div>
+    </div>
+
+    <div class="user-list">
+        <div class="user-list-header">オンライン - <span id="online-count">0</span></div>
+        <div id="users-container">
+            <!-- ユーザーはJSで動的に追加されます -->
+        </div>
+    </div>
+
+    <div class="theme-switch" id="theme-switch">
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // テーマの切り替え
+        const themeSwitch = document.getElementById('theme-switch');
+        const themeIcon = themeSwitch.querySelector('i');
+        let darkMode = true;
+
+        themeSwitch.addEventListener('click', () => {
+            darkMode = !darkMode;
+            if (darkMode) {
+                document.body.classList.remove('light-mode');
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            } else {
+                document.body.classList.add('light-mode');
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            }
+        });
+
+        // メニュー切り替え
+        const menuChat = document.getElementById('menu-chat');
+        const menuContact = document.getElementById('menu-contact');
+        const chatSection = document.getElementById('chat-section');
+        const contactForm = document.getElementById('contact-form');
+        const currentSection = document.getElementById('current-section');
+
+        menuChat.addEventListener('click', () => {
+            menuChat.classList.add('active');
+            menuContact.classList.remove('active');
+            chatSection.style.display = 'flex';
+            contactForm.classList.remove('active');
+            currentSection.textContent = '一般';
+        });
+
+        menuContact.addEventListener('click', () => {
+            menuContact.classList.add('active');
+            menuChat.classList.remove('active');
+            chatSection.style.display = 'none';
+            contactForm.classList.add('active');
+            currentSection.textContent = 'お問い合わせ';
+        });
+
+        // チャット機能
+        const socket = io();
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+        const usersContainer = document.getElementById('users-container');
+        const onlineCount = document.getElementById('online-count');
+
+        // ユーザー名を取得（実際のアプリでは認証システムを使用）
+        const username = prompt('ユーザー名を入力してください：', 'ユーザー' + Math.floor(Math.random() * 1000));
+        
+        // 入力欄の自動リサイズ
+        chatInput.addEventListener('input', () => {
+            chatInput.style.height = 'auto';
+            chatInput.style.height = Math.min(chatInput.scrollHeight, 200) + 'px';
+
+            // 送信ボタンの有効/無効
+            sendButton.disabled = chatInput.value.trim() === '';
+        });
+
+        // Enterキーで送信
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey && !sendButton.disabled) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // 送信ボタンクリック
+        sendButton.addEventListener('click', sendMessage);
+
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (message) {
+                socket.emit('chat message', {
+                    username,
+                    message,
+                    timestamp: new Date().toISOString()
+                });
+                chatInput.value = '';
+                chatInput.style.height = 'auto';
+                sendButton.disabled = true;
+            }
+        }
+
+        // メッセージ受信
+        socket.on('chat message', (data) => {
+            addMessage(data);
+            // 自動スクロール
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        });
+
+        // ユーザーリスト更新
+        socket.on('update users', (users) => {
+            updateUserList(users);
+        });
+
+        // 接続時
+        socket.on('connect', () => {
+            socket.emit('user join', username);
+        });
+
+        function addMessage(data) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+
+            const avatarInitial = data.username.charAt(0).toUpperCase();
+            
+            messageDiv.innerHTML = `
+                <div class="avatar">${avatarInitial}</div>
+                <div class="message-content">
+                    <div class="message-header">
+                        <div class="username">${escapeHTML(data.username)}</div>
+                        <div class="timestamp">${formatTimestamp(data.timestamp)}</div>
+                    </div>
+                    <div class="message-text">${escapeHTML(data.message)}</div>
+                </div>
+            `;
+
+            chatMessages.appendChild(messageDiv);
+        }
+
+        function updateUserList(users) {
+            usersContainer.innerHTML = '';
+            onlineCount.textContent = users.length;
+
+            users.forEach(user => {
+                const userDiv = document.createElement('div');
+                userDiv.className = 'user-item';
+                
+                const avatarInitial = user.charAt(0).toUpperCase();
+                
+                userDiv.innerHTML = `
+                    <div class="user-avatar">${avatarInitial}</div>
+                    <div class="user-name">${escapeHTML(user)}</div>
+                    <div class="user-status"></div>
+                `;
+
+                usersContainer.appendChild(userDiv);
+            });
+        }
+
+        // お問い合わせフォーム
+        const contactAlertDiv = document.getElementById('contact-alert');
+        const contactForm = document.getElementById('contact-form');
+        const submitContactBtn = document.getElementById('submit-contact');
+
+        submitContactBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const subject = document.getElementById('subject').value;
+            const message = document.getElementById('message').value.trim();
+            
+            if (!name || !email || !subject || !message) {
+                showAlert('すべての項目を入力してください。', 'error');
+                return;
+            }
+            
+            // メールアドレスの簡易バリデーション
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showAlert('有効なメールアドレスを入力してください。', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        subject,
+                        message
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert('お問い合わせが送信されました。', 'success');
+                    contactForm.reset();
+                } else {
+                    showAlert(data.error || 'エラーが発生しました。', 'error');
+                }
+            } catch (error) {
+                showAlert('エラーが発生しました。', 'error');
+                console.error('Error:', error);
+            }
+        });
+
+        function showAlert(message, type) {
+            contactAlertDiv.textContent = message;
+            contactAlertDiv.className = `alert ${type}`;
+            
+            setTimeout(() => {
+                contactAlertDiv.className = 'alert';
+            }, 5000);
+        }
+
+        // ユーティリティ関数
+        function escapeHTML(str) {
+            return str.replace(/[&<>"']/g, (match) => {
+                const escapeMap = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                };
+                return escapeMap[match];
+            });
+        }
+
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+    </script>
+</body>
+</html>
